@@ -1,6 +1,7 @@
 import pathlib
 import sys
 
+import numpy as np
 import pandas as pd
 import torch
 
@@ -10,6 +11,20 @@ def unpickle_data(path_name):
     for table in pathlib.Path(path_name).glob("*.pkl"):
         read_data.append(pd.read_pickle(table))
     return read_data
+
+
+def partition_data(data):
+    per = 0.7
+    length_data = len(data)
+    idx = np.random.permutation(data)
+    train_data = idx[0:int(np.round(per * length_data))]
+    test_data = idx[int(np.round(per * length_data)):length_data + 1]
+    if len(train_data) != int(np.round(length_data * per)):
+        print('Error partitioning data!')
+        return False
+    else:
+        print('Successfully partitioned data into train and test.')
+        return train_data, test_data
 
 
 def convert_tensor_to_numpy(unpickled_data):
@@ -29,7 +44,7 @@ def convert_tensor_to_numpy(unpickled_data):
                       'scene_transition_boundary_prediction': scene_transition_boundary_prediction_arr,
                       'imdb_id': imdb_id}
         list_of_movies.append(dict_movie)
-        print('Converted Tensors to Numpy Arrays')
+        # print('Converted Tensors to Numpy Arrays')
     return list_of_movies
 
 
@@ -41,10 +56,14 @@ def to_numpy(tensor):
                          .format(type(tensor)))
     return tensor
 
-
 if __name__ == '__main__':
     print('Screen Segmentation')
     data_dir = sys.argv[1]
     read_data_unpickled = unpickle_data(data_dir)
     print('Successfully unpickled {} files!'.format(len(read_data_unpickled)))
     list_of_movie_arrays = convert_tensor_to_numpy(read_data_unpickled)
+    round = np.round(64 * 0.7)
+    print('value {}'.format(round))
+    (train_data, test_data) = partition_data(list_of_movie_arrays)
+    print('Train data size = {}'.format(len(train_data)))
+    print('Test data size = {}'.format(len(test_data)))
