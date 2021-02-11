@@ -27,6 +27,18 @@ def partition_data(data):
         return train_data, test_data
 
 
+def initialize_parameters(layer_dimensions):
+    parameters = {}
+    L = len(layer_dimensions)
+    for l in range(1, L):
+        parameters['W' + str(l)] = np.random.randn(layer_dimensions[l], layer_dimensions[l - 1]) * 0.01
+        parameters['b' + str(l)] = np.zeros((layer_dimensions[l], 1))
+        assert (parameters['W' + str(l)].shape == (layer_dimensions[l], layer_dimensions[l - 1]))
+        assert (parameters['b' + str(l)].shape == (layer_dimensions[l], 1))
+    print('Random Initialization of weights and bias successful!')
+    return parameters
+
+
 def convert_tensor_to_numpy(unpickled_data):
     list_of_movies = []
     for dict_elem in unpickled_data:
@@ -44,7 +56,6 @@ def convert_tensor_to_numpy(unpickled_data):
                       'scene_transition_boundary_prediction': scene_transition_boundary_prediction_arr,
                       'imdb_id': imdb_id}
         list_of_movies.append(dict_movie)
-        # print('Converted Tensors to Numpy Arrays')
     return list_of_movies
 
 
@@ -67,3 +78,7 @@ if __name__ == '__main__':
     (train_data, test_data) = partition_data(list_of_movie_arrays)
     print('Train data size = {}'.format(len(train_data)))
     print('Test data size = {}'.format(len(test_data)))
+
+    network_layers = [7, 5, 6, 4, 4]
+    parameters = initialize_parameters(network_layers)
+    print('Parameters: {}'.format(parameters))
