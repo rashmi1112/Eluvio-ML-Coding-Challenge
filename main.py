@@ -1,3 +1,4 @@
+import itertools
 import pathlib
 import sys
 
@@ -25,6 +26,23 @@ def partition_data(data):
     else:
         print('Successfully partitioned data into train and test.')
         return train_data, test_data
+
+
+def extract_input_output(input_dict):
+    dim = len(input_dict['place'])
+    Y = input_dict['scene_transition_boundary_ground_truth'].reshape(-1, 1)
+    # print('Y_shape={}', format(len(Y)))
+    # print('input_1 = {}'.format((input_dict['place'].shape[0])))
+    # print('place = {}'.format(input_dict['place'].shape))
+    # print('cast = {}'.format(input_dict['cast'].shape))
+    # print('act = {}'.format(input_dict['action'].shape))
+    # print('aud = {}'.format(input_dict['audio'].shape))
+    place_list = input_dict['place'].reshape(dim, 1)
+    cast_list = input_dict['cast'].reshape(dim, 1)
+    action_list = input_dict['action'].reshape(dim, 1)
+    audio_list = input_dict['audio'].reshape(dim, 1)
+    X = list(itertools.chain(place_list, cast_list, action_list, audio_list))
+    return X, Y
 
 
 def initialize_parameters(layer_dimensions):
@@ -67,18 +85,18 @@ def to_numpy(tensor):
                          .format(type(tensor)))
     return tensor
 
+
 if __name__ == '__main__':
     print('Screen Segmentation')
     data_dir = sys.argv[1]
     read_data_unpickled = unpickle_data(data_dir)
     print('Successfully unpickled {} files!'.format(len(read_data_unpickled)))
     list_of_movie_arrays = convert_tensor_to_numpy(read_data_unpickled)
-    round = np.round(64 * 0.7)
-    print('value {}'.format(round))
     (train_data, test_data) = partition_data(list_of_movie_arrays)
     print('Train data size = {}'.format(len(train_data)))
     print('Test data size = {}'.format(len(test_data)))
 
-    network_layers = [7, 5, 6, 4, 4]
-    parameters = initialize_parameters(network_layers)
-    print('Parameters: {}'.format(parameters))
+    X_m, Y_m = extract_input_output(list_of_movie_arrays[0])
+
+    # network_layers = [7, 5, 6, 4, 4]
+    # parameters = initialize_parameters(network_layers)
